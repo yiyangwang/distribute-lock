@@ -1,0 +1,30 @@
+spring:
+  redis:
+    port: 6379
+    database: 0
+    host: 172.19.102.140
+    password:
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+    timeout: 5000ms 
+  application:
+    name: redis-server
+    
+server:
+  port:
+    8080
+    
+    
+logging:
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  path: "./logs/"
+  file: "./logs/my.log"
+  file.max-size: 10MB
+  level:
+    root: INFO

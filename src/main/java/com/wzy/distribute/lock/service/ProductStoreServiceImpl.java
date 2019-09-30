@@ -62,17 +62,34 @@ public class ProductStoreServiceImpl implements ProductStoreService {
 	
 	@Override
 	public boolean decrementProductStore(String productId, Integer productQuantity) {
-		LOGGER.debug("decrementProductStore  productId : {} ,  productQuantity : {} " , productId , productQuantity);
+		LOGGER.info("decrementProductStore  productId : {} ,  productQuantity : {} " , productId , productQuantity);
 		//库存key
 		String key = "dec_store_lock_" + productId;
 		long time = System.currentTimeMillis() + TIMOUT;
+		LOGGER.info("线程开始获取锁" );
+		
+		Integer currentNum = this.queryProduct(productId);
+		
+		Boolean flag = redisLock.tryLock(key, String.valueOf(time));
+		while(currentNum != null && currentNum > 0 && flag == false) {
+			LOGGER.info("线程自旋等待");
+			currentNum = this.queryProduct(productId);
+			time = System.currentTimeMillis() + TIMOUT;
+			flag = redisLock.tryLock(key, String.valueOf(time));
+			try {
+				Thread.currentThread().sleep( 500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		
 		//如果加锁失败
-		if(!redisLock.tryLock(key, String.valueOf(time))) {
-			LOGGER.info("获取锁失败  ,  key : {}" , key);
-			return false;
-		}
-		LOGGER.info("获取锁成功  ,  key : {}" , key);
+//		if(!redisLock.tryLock(key, String.valueOf(time))) {
+//			LOGGER.info("Thread : {} 获取锁失败  ,  key : {}" , Thread.currentThread().getId(), key);
+//			return false;
+//		}
+		
+		LOGGER.info("线程Thread获取锁成功  ,  key : {}"  , key);
 		//查询库存
 		Integer productStore = this.queryProduct(productId);
 		if(productStore == null) {

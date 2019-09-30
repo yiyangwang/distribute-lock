@@ -28,6 +28,7 @@ public class RedisLock {
 	 * @return
 	 */
 	public Boolean tryLock(String key , String value) {
+		//如果没有获取到，就判断是否库存为0，不为0就继续等待
 		if (stringRedisTemplate.opsForValue().setIfAbsent(key, value, EXPIRE_TIME, TimeUnit.MILLISECONDS)) {
             return true;
         }
@@ -53,6 +54,7 @@ public class RedisLock {
 		try {
 			if(StringUtils.isNotEmpty(currentValue) && currentValue.equals(value)) {
 				//当前线程只能删除自己的锁
+				LOGGER.info( "释放锁 key ,  {} --> {}" , key , value );
 				stringRedisTemplate.opsForValue().getOperations().delete(key);
 			}
 		}catch(Exception e) {
